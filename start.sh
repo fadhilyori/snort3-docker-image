@@ -53,6 +53,26 @@ if [ -z "$LIGHTSPD_RULESET" ]; then
     LIGHTSPD_RULESET=false
 fi
 
+# check which ruleset is enabled from ruleset variables
+# ruleset valid values are: community, registered, lightspd
+if [ -n "$RULESET" ]; then
+    case "$RULESET" in
+        "community")
+            COMMUNITY_RULESET=true
+            ;;
+        "registered")
+            REGISTERED_RULESET=true
+            ;;
+        "lightspd")
+            LIGHTSPD_RULESET=true
+            ;;
+        *)
+            echo "RULESET must be one of: community, registered, lightspd"
+            exit 1
+            ;;
+    esac
+fi
+
 # check if snort_blocklist is set
 if [ -z "$SNORT_BLOCKLIST" ]; then
     SNORT_BLOCKLIST=false
@@ -133,9 +153,13 @@ if [ -n "$SNORT_COMPRESSED_RULES_FILE_PATH" ] && [ "$DOWNLOAD_RULES" = false ]; 
 
     pulledpork.py -f "$SNORT_COMPRESSED_RULES_FILE_PATH" -c "$PULLEDPORT_TEMP_FILE" || exit $?
 else
-    echo "Updating Snort Rules..."
+    echo "Downloading Snort Rules..."
 
     pulledpork.py -c "$PULLEDPORT_TEMP_FILE" || exit $?
+        
+    echo "Concatenating local.rules to pulledpork.rules..."
+
+    cat /usr/local/etc/snort3/rules/local.rules >> /usr/local/etc/snort3/rules/pulledpork.rules
 fi
 
 # remove temp file
@@ -143,4 +167,4 @@ rm -f "$PULLEDPORT_TEMP_FILE"
 
 echo "Starting Snort..."
 
-exec /usr/local/bin/snort -c /usr/local/etc/snort/snort.lua -y -s 65535 -m 0x1b -k none -l /var/log/snort -u snort -g snort --plugin-path=/usr/local/etc/snort3/so_rules/ -i "$NETWORK_INTERFACE" -A alert_unixsock
+exec /usr/local/bin/snort -c /usr/local/etc/snort/snort.lua -y -s 65535 -m 0x1b -A alert_unixsock -k none -l /var/log/snort -u snort -g snort --plugin-path=/usr/local/etc/snort3/so_rules/ -i "$NETWORK_INTERFACE"
