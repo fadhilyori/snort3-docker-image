@@ -1,8 +1,9 @@
 Dockerfiles/
 .github/
+rules/
 .hadolint.yaml
 .gitignore
 LICENSE
 Makefile
 README.md
-docker-compose.yml
+compose.yml

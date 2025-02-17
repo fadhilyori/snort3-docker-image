@@ -107,13 +107,6 @@ sed -i "s/snort_blocklist = .*/snort_blocklist = $SNORT_BLOCKLIST/g" "$PULLEDPOR
 # replace et_blocklist in pulledpork.conf file with the one provided
 sed -i "s/et_blocklist = .*/et_blocklist = $ET_BLOCKLIST/g" "$PULLEDPORT_TEMP_FILE"
 
-# run pulledpork if DOWNLOAD_RULES is set to true
-if [ "$DOWNLOAD_RULES" = true ]; then
-    echo "Downloading Snort Rules..."
-
-    pulledpork.py -c "$PULLEDPORT_TEMP_FILE" || exit $?
-fi
-
 # if SNORT_BLOCKLIST or ET_BLOCKLIST are set true or BLOCKLIST_URLS is not empty, then uncomment blocklist_path
 if [ "$SNORT_BLOCKLIST" = true ] || [ "$ET_BLOCKLIST" = true ] || [ -n "$BLOCKLIST_URLS" ]; then
     sed -i "s/^#\(blocklist_path = .*\)/\1/" "$PULLEDPORT_TEMP_FILE"
@@ -121,8 +114,15 @@ else
     sed -i "s/^\(blocklist_path = .*\)/#\1/" "$PULLEDPORT_TEMP_FILE"
 fi
 
-# run pulledpork if SNORT_COMPRESSED_RULES_FILENAME is not empty
-if [ -n "$SNORT_COMPRESSED_RULES_FILE_PATH" ]; then
+# run pulledpork if DOWNLOAD_RULES is set to true
+if [ "$DOWNLOAD_RULES" = true ]; then
+    echo "Downloading Snort Rules..."
+
+    pulledpork.py -c "$PULLEDPORT_TEMP_FILE" || exit $?
+fi
+
+# run pulledpork if SNORT_COMPRESSED_RULES_FILENAME is not empty and DOWNLOAD_RULES is set to false
+if [ -n "$SNORT_COMPRESSED_RULES_FILE_PATH" ] && [ "$DOWNLOAD_RULES" = false ]; then
     # check if file exists in $SNORT_COMPRESSED_RULES_FILE_PATH
     if [ ! -f "$SNORT_COMPRESSED_RULES_FILE_PATH" ]; then
         echo "Compressed Snort Rule file at $SNORT_COMPRESSED_RULES_FILE_PATH does not exist"
@@ -132,6 +132,10 @@ if [ -n "$SNORT_COMPRESSED_RULES_FILE_PATH" ]; then
     echo "Extracting Snort Rules..."
 
     pulledpork.py -f "$SNORT_COMPRESSED_RULES_FILE_PATH" -c "$PULLEDPORT_TEMP_FILE" || exit $?
+else
+    echo "Updating Snort Rules..."
+
+    pulledpork.py -c "$PULLEDPORT_TEMP_FILE" || exit $?
 fi
 
 # remove temp file
@@ -139,4 +143,4 @@ rm -f "$PULLEDPORT_TEMP_FILE"
 
 echo "Starting Snort..."
 
-/usr/local/bin/snort -c /usr/local/etc/snort/snort.lua -y -s 65535 -m 0x1b -k none -l /var/log/snort -u snort -g snort --plugin-path=/usr/local/etc/snort3/so_rules/ -i "$NETWORK_INTERFACE"
+exec /usr/local/bin/snort -c /usr/local/etc/snort/snort.lua -y -s 65535 -m 0x1b -k none -l /var/log/snort -u snort -g snort --plugin-path=/usr/local/etc/snort3/so_rules/ -i "$NETWORK_INTERFACE" -A alert_unixsock

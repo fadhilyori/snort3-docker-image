@@ -108,8 +108,8 @@ reputation =
 
     --blocklist = 'blacklist file name with ip lists'
     --allowlist = 'whitelist file name with ip lists'
-    blocklist = BLACK_LIST_PATH .. 'reputation.blocklist',
-    allowlist = WHITE_LIST_PATH .. 'reputation.allowlist',
+    blocklist = BLACK_LIST_PATH .. '/reputation.blocklist',
+    allowlist = WHITE_LIST_PATH .. '/reputation.allowlist',
 }
 
 ---------------------------------------------------------------------------
@@ -268,11 +268,13 @@ rate_filter =
 --packet_capture = { }
 --file_log = { }
 
-alert_json = {
-    file = true,
-    limit = 102400,
-    fields = 'action b64_data class client_bytes client_pkts dir dst_addr dst_ap dst_port eth_dst eth_len eth_src eth_type flowstart_time geneve_vni gid icmp_code icmp_id icmp_seq icmp_type iface ip_id ip_len mpls msg pkt_gen pkt_len pkt_num priority proto rev rule seconds server_bytes server_pkts service sgt sid src_addr src_ap src_port target tcp_ack tcp_flags tcp_len tcp_seq tcp_win timestamp tos ttl udp_len vlan'
-}
+alert_unixsock = {}
+
+-- alert_json = {
+--     file = true,
+--     limit = 102400,
+--     fields = 'action b64_data class client_bytes client_pkts dir dst_addr dst_ap dst_port eth_dst eth_len eth_src eth_type flowstart_time geneve_vni gid icmp_code icmp_id icmp_seq icmp_type iface ip_id ip_len mpls msg pkt_gen pkt_len pkt_num priority proto rev rule seconds server_bytes server_pkts service sgt sid src_addr src_ap src_port target tcp_ack tcp_flags tcp_len tcp_seq tcp_win timestamp tos ttl udp_len vlan'
+-- }
 
 ---------------------------------------------------------------------------
 -- 8. configure tweaks

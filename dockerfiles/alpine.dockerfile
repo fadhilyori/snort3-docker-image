@@ -125,8 +125,8 @@ RUN set -eux; \
     ldconfig /usr/local/lib ; \
     chmod +x /usr/local/bin/pulledpork.py ; \
     # setup user \
-    addgroup -S snort && \
-    adduser -S -G netdev -g snort snort ; \
+    addgroup -g 1001 -S snort && \
+    adduser -S -u 1001 -G netdev -G snort snort ; \
     install -g snort -o snort -m 5775 -d /var/log/snort ; \
     # prepare snort rules diretories \
     mkdir -p /var/log/snort \
@@ -135,7 +135,8 @@ RUN set -eux; \
     /usr/local/etc/snort3/lists ; \
     touch /usr/local/etc/snort3/rules/local.rules \
     /usr/local/etc/snort3/lists/reputation.blocklist \
-    /usr/local/etc/snort3/lists/reputation.whitelist
+    /usr/local/etc/snort3/lists/reputation.allowlist \
+    /usr/local/etc/snort3/rules/pulledpork.rules
 
 COPY --link conf/pulledpork.conf /usr/local/etc/pulledpork/pulledpork.conf
 COPY --link conf/snort_defaults.lua /usr/local/etc/snort/snort_defaults.lua
